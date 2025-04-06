@@ -1,0 +1,59 @@
+
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: postgres-db
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  signup-service:
+    build:
+      context: ./backend/signup
+    container_name: signup-service
+    restart: always
+    environment:
+      DB_HOST: ${DB_HOST}
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+    depends_on:
+      - postgres
+    ports:
+      - "8000:8000"
+
+  signin-service:
+    build:
+      context: ./backend/signin
+    container_name: signin-service
+    restart: always
+    environment:
+      DB_HOST: ${DB_HOST}
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+    depends_on:
+      - postgres
+    ports:
+      - "8001:8001"
+
+  react-app:
+    build:
+      context: ./frontend/auth-app
+    container_name: react-app
+    restart: always
+    ports:
+      - "3000:80"
+    depends_on:
+      - signup-service
+      - signin-service
+
+volumes:
+  postgres_data:
