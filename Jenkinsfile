@@ -10,8 +10,7 @@ pipeline {
         REACT_DOCKERIMAGE_NAME = "aakashbodade/react:${IMAGE_TAG}" 
         SIGNIN_DOCKERIMAGE_NAME = "aakashbodade/signin:${IMAGE_TAG}"
         SIGNUP_DOCKERIMAGE_NAME = "aakashbodade/signup:${IMAGE_TAG}"
-        DOCKER_USERNAME = credentials('DOCKERHUB_USERNAME')
-        DOCKER_PASSWORD = credentials('DOCKERHUB_PASSWORD')
+        DOCKER_CREDENTIALS = credentials('DOCKERHUB_CREDENTIALS')
     }
     agent any
     stages {
@@ -33,31 +32,33 @@ pipeline {
                 stage('Building signup docker image'){
                     steps{
                         script{
-                            sh "docker build -t ${SIGNUP_DOCKERIMAGE_NAME} -f ${SIGNUP_DOCKERFILE}"
+                            sh "docker build -t ${SIGNUP_DOCKERIMAGE_NAME} -f ${SIGNUP_DOCKERFILE} ."
                         }
                     }
                 }
                 stage('Building react docker image'){
                     steps{
                         script{
-                            sh "docker build -t ${REACT_DOCKERIMAGE_NAME} -f ${REACT_DOCKERFILE}"
+                            sh "docker build -t ${REACT_DOCKERIMAGE_NAME} -f ${REACT_DOCKERFILE} ."
                         }
                     }
                 }
             }
         }
-        stage ("Dockerhub login"){
-            steps{
-                script{
-                    sh "docker login --username ${DOCKER_USERNAME} --password-stdin"
+        stage("Dockerhub login") {
+            steps {
+                script {
+                    sh "docker login -u '${DOCKER_CREDENTIALS_USR}' -p '${DOCKER_CREDENTIALS_PSW}'"
                 }
             }
         }
-        stage ("Push Image to docker hub"){
-            script{
-                sh "docker push ${SIGNIN_DOCKERIMAGE_NAME}"
-                sh "docker push ${SIGNUP_DOCKERIMAGE_NAME}"
-                sh "docker push ${REACT_DOCKERIMAGE_NAME}"
+        stage("Push Image to docker hub") {
+            steps { // Correct fix here.
+                script {
+                    sh "docker push ${SIGNIN_DOCKERIMAGE_NAME}"
+                    sh "docker push ${SIGNUP_DOCKERIMAGE_NAME}"
+                    sh "docker push ${REACT_DOCKERIMAGE_NAME}"
+                }
             }
         }
     }
