@@ -8,7 +8,7 @@ RUN apt-get update && apt-get install -y \
     libpq-dev gcc
 
 # Copy requirements and install dependencies
-COPY backend/signin/requirements.txt /app/requirements.txt
+COPY shoppingapp/backend/signin/requirements.txt /app/requirements.txt
 
 RUN pip install --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt

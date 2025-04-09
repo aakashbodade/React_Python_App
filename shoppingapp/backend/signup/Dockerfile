@@ -8,7 +8,7 @@ RUN apt-get update && apt-get install -y \
     libpq-dev gcc
 
 # Copy requirements and install dependencies
-COPY backend/signup/requirements.txt /app/requirements.txt
+COPY shoppingapp/backend/signup/requirements.txt /app/requirements.txt
 
 RUN pip install --upgrade pip
 RUN pip install fastapi "uvicorn[standard]"
