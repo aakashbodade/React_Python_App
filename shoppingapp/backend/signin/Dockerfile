@@ -15,7 +15,7 @@ RUN apt-get update && apt-get install -y \
 COPY shoppingapp/backend/signin/requirements.txt /app/requirements.txt
 
 RUN pip install --upgrade pip
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install -r requirements.txt
 
 
 # Stage 2: Create the final image
