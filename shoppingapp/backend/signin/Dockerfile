@@ -3,9 +3,12 @@ FROM python:3.11-slim AS builder
 
 WORKDIR /app
 
-# Install system dependencies for PostgreSQL
+# Install build dependencies
 RUN apt-get update && apt-get install -y \
-    libpq-dev gcc
+    libpq-dev \
+    gcc \
+    python3-dev \
+    && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements and install dependencies
 COPY shoppingapp/backend/signin/requirements.txt /app/requirements.txt
