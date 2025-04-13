@@ -10,6 +10,10 @@ COPY shoppingapp/frontend/package-lock.json /app/package-lock.json
 RUN npm install
 
 # Copy the rest of the app's code into the container
+COPY public/ public/
+COPY src/ src/
+COPY package.json .
+COPY package-lock.json .
 COPY . .
 
 # Build the React application

@@ -62,4 +62,18 @@ pipeline {
             }
         }
     }
+
+post {
+        always {
+            echo 'Cleaning up...'
+            // Cleanup actions, e.g., deleting workspace
+            cleanWs() // This is a built-in function to clean the workspace
+        }
+        success {
+            echo 'Build succeeded!'
+        }
+        failure {
+            echo 'Build failed!'
+        }
+    }
 }
