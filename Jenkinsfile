@@ -61,6 +61,15 @@ pipeline {
                 }
             }
         }
+        stage("Running images on docker containers"){
+            steps{
+                script{
+                    sh "docker run -d -p 3000:3000 ${REACT_DOCKERIMAGE_NAME}"
+                    sh "docker run -d -p 8001:8001 ${SIGNIN_DOCKERIMAGE_NAME}"
+                    sh "docker run -d -p 8000:8000 ${SIGNUP_DOCKERIMAGE_NAME}"
+                }
+            }
+        }
     }
 
 post {
