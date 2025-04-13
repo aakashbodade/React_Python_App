@@ -5,8 +5,8 @@ FROM node:16 AS build
 WORKDIR /app
 
 # Copy package.json and package-lock.json to the working directory
-COPY public/ public/
-COPY src/ src/
+COPY shoppingapp/frontend/public/ /app/public/
+COPY shoppingapp/frontend/src/ /app/src/
 COPY shoppingapp/frontend/package.json /app/package.json
 COPY shoppingapp/frontend/package-lock.json /app/package-lock.json
 RUN npm install
