@@ -23,9 +23,13 @@ pipeline {
         }
 
         stage('SonarQube Analysis') {
-    def scannerHome = tool 'SonarScanner';
-    withSonarQubeEnv() {
-      sh "${SONARQUBE_SCANNER}/bin/sonar-scanner"
+    withSonarQubeEnv('your_sonar_qube_server_name') { // Replace with your SonarQube server name
+                    sh '''
+                        sonar-scanner \
+                        -Dsonar.projectKey=ShoppingApp \
+                        -Dsonar.sources=. \
+                        -Dsonar.host.url=http://13.126.201.116:9000/
+                    '''
     }
   }
 
