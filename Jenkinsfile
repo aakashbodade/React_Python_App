@@ -22,16 +22,32 @@ pipeline {
             }
         }
 
+        stage('Install & Test - Backend') {
+            steps {
+                dir('shoppingapp/backend/signin') {
+                    sh '''
+                        pip install -r requirements.txt
+                        pytest --cov=. --cov-report=xml
+                    '''
+                }
+            }
+        }
+
+        stage('Install & Test - Frontend') {
+            steps {
+                dir('frontend') {
+                    sh '''
+                        npm install
+                        npm run test -- --coverage
+                    '''
+                }
+            }
+        }
+
         stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv("${SONARQUBE_ENV}") {
-                    sh """
-    ${tool SONARQUBE_SCANNER}/bin/sonar-scanner \
-    -Dsonar.projectKey=ShoppingApp \
-    -Dsonar.sources=backend,frontend \
-    -Dsonar.host.url=http://13.126.201.116:9000/ \
-    -Dsonar.login=${SonarQube}
-"""
+                    sh "${tool SONARQUBE_SCANNER}/bin/sonar-scanner"
                 }
             }
         }
@@ -43,6 +59,7 @@ pipeline {
                 }
             }
         }
+    }
 
         stage ('Building Docker Images'){
             parallel {
