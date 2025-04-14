@@ -11,8 +11,8 @@ pipeline {
         SIGNIN_DOCKERIMAGE_NAME = "aakashbodade/signin:${IMAGE_TAG}"
         SIGNUP_DOCKERIMAGE_NAME = "aakashbodade/signup:${IMAGE_TAG}"
         DOCKER_CREDENTIALS = credentials('DOCKERHUB_CREDENTIALS')
-        SONARQUBE_ENV = 'SonarQube'        // Name in Jenkins > Configure System
-        SONARQUBE_SCANNER = 'SonarQubeScanner'     // Name in Jenkins > Global Tool Configuration
+        SONARQUBE_SERVER = 'SonarQube' // The name you gave in Jenkins configuration
+        SONAR_SCANNER_HOME = tool 'SonarQubeScanner' // If you installed SonarQube Scanner as a tool
     }
     agent any
     stages {
@@ -23,16 +23,16 @@ pipeline {
         }
 
         stage('SonarQube Analysis') {
-    withSonarQubeEnv('your_sonar_qube_server_name') { // Replace with your SonarQube server name
-                    sh '''
-                        sonar-scanner \
-                        -Dsonar.projectKey=ShoppingApp \
-                        -Dsonar.sources=. \
-                        -Dsonar.host.url=http://13.126.201.116:9000/
-                    '''
-    }
-  }
-
+            steps {
+                script {
+                    // Run SonarQube analysis
+                    withSonarQubeEnv(SONARQUBE_SERVER) {
+                        sh "${SONAR_SCANNER_HOME}/bin/sonar-scanner -Dsonar.projectKey=ShoppingApp -Dsonar.sources=. -Dsonar.language=py,js -Dsonar.sourceEncoding=UTF-8"
+                    }
+                }
+            }
+        }
+        
         stage('Quality Gate') {
             steps {
                 timeout(time: 1, unit: 'MINUTES') {
