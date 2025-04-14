@@ -11,12 +11,30 @@ pipeline {
         SIGNIN_DOCKERIMAGE_NAME = "aakashbodade/signin:${IMAGE_TAG}"
         SIGNUP_DOCKERIMAGE_NAME = "aakashbodade/signup:${IMAGE_TAG}"
         DOCKER_CREDENTIALS = credentials('DOCKERHUB_CREDENTIALS')
+        SONARQUBE_ENV = 'SonarQube'        // Name in Jenkins > Configure System
+        SONARQUBE_SCANNER = 'SonarQubeScanner'     // Name in Jenkins > Global Tool Configuration
     }
     agent any
     stages {
         stage ('Cloning git repository'){
             steps {
                 checkout scm
+            }
+        }
+
+        stage('SonarQube Analysis') {
+            steps {
+                withSonarQubeEnv("${SONARQUBE_ENV}") {
+                    sh "${tool SONARQUBE_SCANNER}/bin/sonar-scanner"
+                }
+            }
+        }
+
+        stage('Quality Gate') {
+            steps {
+                timeout(time: 1, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: true
+                }
             }
         }
 
