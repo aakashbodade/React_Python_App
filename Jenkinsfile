@@ -25,7 +25,13 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv("${SONARQUBE_ENV}") {
-                    sh "${tool SONARQUBE_SCANNER}/bin/sonar-scanner"
+                    sh """
+    ${tool SONARQUBE_SCANNER}/bin/sonar-scanner \
+    -Dsonar.projectKey=ShoppingApp \
+    -Dsonar.sources=backend,frontend \
+    -Dsonar.host.url=http://13.126.201.116:9000/ \
+    -Dsonar.login=${SonarQube}
+"""
                 }
             }
         }
