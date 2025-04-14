@@ -16,7 +16,7 @@ pipeline {
     }
     agent any
     stages {
-        stage ('Cloning git repository'){
+        stage('Cloning git repository') {
             steps {
                 checkout scm
             }
@@ -59,33 +59,33 @@ pipeline {
                 }
             }
         }
-    }
 
-        stage ('Building Docker Images'){
+        stage('Building Docker Images') {
             parallel {
-                stage('Building signin docker image'){
-                    steps{
-                        script{
+                stage('Building signin docker image') {
+                    steps {
+                        script {
                             sh "docker build -t ${SIGNIN_DOCKERIMAGE_NAME} -f ${SIGNIN_DOCKERFILE} ."
                         }
                     }
                 }
-                stage('Building signup docker image'){
-                    steps{
-                        script{
+                stage('Building signup docker image') {
+                    steps {
+                        script {
                             sh "docker build -t ${SIGNUP_DOCKERIMAGE_NAME} -f ${SIGNUP_DOCKERFILE} ."
                         }
                     }
                 }
-                stage('Building react docker image'){
-                    steps{
-                        script{
+                stage('Building react docker image') {
+                    steps {
+                        script {
                             sh "docker build -t ${REACT_DOCKERIMAGE_NAME} -f ${REACT_DOCKERFILE} ."
                         }
                     }
                 }
             }
         }
+
         stage("Dockerhub login") {
             steps {
                 script {
@@ -93,8 +93,9 @@ pipeline {
                 }
             }
         }
-        stage("Push Image to docker hub") {
-            steps { // Correct fix here.
+
+        stage("Push Image to DockerHub") {
+            steps {
                 script {
                     sh "docker push ${SIGNIN_DOCKERIMAGE_NAME}"
                     sh "docker push ${SIGNUP_DOCKERIMAGE_NAME}"
@@ -102,9 +103,10 @@ pipeline {
                 }
             }
         }
-        stage("Running images on docker containers"){
-            steps{
-                script{
+
+        stage("Running images on Docker containers") {
+            steps {
+                script {
                     sh "docker run -d -p 80:80 ${REACT_DOCKERIMAGE_NAME}"
                     sh "docker run -d -p 8001:8001 ${SIGNIN_DOCKERIMAGE_NAME}"
                     sh "docker run -d -p 8000:8000 ${SIGNUP_DOCKERIMAGE_NAME}"
@@ -112,12 +114,10 @@ pipeline {
             }
         }
     }
-
-post {
+    post {
         always {
-            echo 'Cleaning up...'
-            // Cleanup actions, e.g., deleting workspace
-            cleanWs() // This is a built-in function to clean the workspace
+            echo 'Cleaning up workspace...'
+            cleanWs()
         }
         success {
             echo 'Build succeeded!'
