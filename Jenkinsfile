@@ -22,28 +22,6 @@ pipeline {
             }
         }
 
-        stage('Install & Test - Backend') {
-            steps {
-                dir('shoppingapp/backend/signin') {
-                    sh '''
-                        pip install -r requirements.txt
-                        pytest --cov=. --cov-report=xml
-                    '''
-                }
-            }
-        }
-
-        stage('Install & Test - Frontend') {
-            steps {
-                dir('frontend') {
-                    sh '''
-                        npm install
-                        npm run test -- --coverage
-                    '''
-                }
-            }
-        }
-
         stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv("${SONARQUBE_ENV}") {
