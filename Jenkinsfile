@@ -24,14 +24,77 @@ pipeline {
     }
 
     stages {
-        stage('Wrap with AnsiColor') {
+        stage('Clone Repository') {
             steps {
-                wrap([$class: 'AnsiColorBuildWrapper', 'colorMapName': 'xterm']) {
-                    script {
-                        // From here onwards, all logs will be colored
-                        build()
-                    }
+                echo 'Cloning Git repository...'
+                checkout scm
+            }
+        }
+
+        stage('Run SonarQube Analysis') {
+            steps {
+                echo 'Performing static code analysis with SonarQube...'
+                withSonarQubeEnv(env.SONARQUBE_SERVER) {
+                    sh "${env.SONAR_SCANNER_HOME}/bin/sonar-scanner \
+                        -Dsonar.projectKey=ShoppingApp \
+                        -Dsonar.sources=. \
+                        -Dsonar.language=py,js \
+                        -Dsonar.sourceEncoding=UTF-8"
                 }
+            }
+        }
+
+        stage('Check Quality Gate') {
+            steps {
+                timeout(time: 2, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: true
+                }
+            }
+        }
+
+        stage('Build Docker Images') {
+            steps {
+                script {
+                    parallel(
+                        'Build Signin Image': {
+                            echo 'Building signin Docker image...'
+                            sh "docker build --no-cache -t ${env.SIGNIN_DOCKERIMAGE_NAME} -f ${env.SIGNIN_DOCKERFILE} ."
+                        },
+                        'Build Signup Image': {
+                            echo 'Building signup Docker image...'
+                            sh "docker build --no-cache -t ${env.SIGNUP_DOCKERIMAGE_NAME} -f ${env.SIGNUP_DOCKERFILE} ."
+                        },
+                        'Build React Image': {
+                            echo 'Building React frontend Docker image...'
+                            sh "docker build --no-cache -t ${env.REACT_DOCKERIMAGE_NAME} -f ${env.REACT_DOCKERFILE} ."
+                        }
+                    )
+                }
+            }
+        }
+
+        stage('DockerHub Login') {
+            steps {
+                echo 'Logging in to DockerHub...'
+                sh "docker login -u '${env.DOCKER_CREDENTIALS_USR}' -p '${env.DOCKER_CREDENTIALS_PSW}'"
+            }
+        }
+
+        stage('Push Docker Images') {
+            steps {
+                echo 'Pushing Docker images to DockerHub...'
+                sh "docker push ${env.SIGNIN_DOCKERIMAGE_NAME}"
+                sh "docker push ${env.SIGNUP_DOCKERIMAGE_NAME}"
+                sh "docker push ${env.REACT_DOCKERIMAGE_NAME}"
+            }
+        }
+
+        stage('Deploy Containers') {
+            steps {
+                echo 'Deploying Docker containers...'
+                sh "docker run -d --restart=always -p 80:80 ${env.REACT_DOCKERIMAGE_NAME}"
+                sh "docker run -d --restart=always -p 8001:8001 ${env.SIGNIN_DOCKERIMAGE_NAME}"
+                sh "docker run -d --restart=always -p 8000:8000 ${env.SIGNUP_DOCKERIMAGE_NAME}"
             }
         }
     }
@@ -47,65 +110,5 @@ pipeline {
         failure {
             echo 'Pipeline failed! Investigate and resolve issues.'
         }
-    }
-}
-
-def build() {
-    stage('Clone Repository') {
-        echo 'Cloning Git repository...'
-        checkout scm
-    }
-
-    stage('Run SonarQube Analysis') {
-        echo 'Performing static code analysis with SonarQube...'
-        withSonarQubeEnv(env.SONARQUBE_SERVER) {
-            sh "${env.SONAR_SCANNER_HOME}/bin/sonar-scanner \
-                -Dsonar.projectKey=ShoppingApp \
-                -Dsonar.sources=. \
-                -Dsonar.language=py,js \
-                -Dsonar.sourceEncoding=UTF-8"
-        }
-    }
-
-    stage('Check Quality Gate') {
-        timeout(time: 2, unit: 'MINUTES') {
-            waitForQualityGate abortPipeline: true
-        }
-    }
-
-    stage('Build Docker Images') {
-        parallel (
-            'Build Signin Image': {
-                echo 'Building signin Docker image...'
-                sh "docker build --no-cache -t ${env.SIGNIN_DOCKERIMAGE_NAME} -f ${env.SIGNIN_DOCKERFILE} ."
-            },
-            'Build Signup Image': {
-                echo 'Building signup Docker image...'
-                sh "docker build --no-cache -t ${env.SIGNUP_DOCKERIMAGE_NAME} -f ${env.SIGNUP_DOCKERFILE} ."
-            },
-            'Build React Image': {
-                echo 'Building React frontend Docker image...'
-                sh "docker build --no-cache -t ${env.REACT_DOCKERIMAGE_NAME} -f ${env.REACT_DOCKERFILE} ."
-            }
-        )
-    }
-
-    stage('DockerHub Login') {
-        echo 'Logging in to DockerHub...'
-        sh "docker login -u '${env.DOCKER_CREDENTIALS_USR}' -p '${env.DOCKER_CREDENTIALS_PSW}'"
-    }
-
-    stage('Push Docker Images') {
-        echo 'Pushing Docker images to DockerHub...'
-        sh "docker push ${env.SIGNIN_DOCKERIMAGE_NAME}"
-        sh "docker push ${env.SIGNUP_DOCKERIMAGE_NAME}"
-        sh "docker push ${env.REACT_DOCKERIMAGE_NAME}"
-    }
-
-    stage('Deploy Containers') {
-        echo 'Deploying Docker containers...'
-        sh "docker run -d --restart=always -p 80:80 ${env.REACT_DOCKERIMAGE_NAME}"
-        sh "docker run -d --restart=always -p 8001:8001 ${env.SIGNIN_DOCKERIMAGE_NAME}"
-        sh "docker run -d --restart=always -p 8000:8000 ${env.SIGNUP_DOCKERIMAGE_NAME}"
     }
 }
