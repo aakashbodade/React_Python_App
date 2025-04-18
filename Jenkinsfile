@@ -14,96 +14,28 @@ pipeline {
         SONARQUBE_SERVER = 'SonarQube'
         SONAR_SCANNER_HOME = tool 'SonarQubeScanner'
     }
+
     agent any
+
     options {
-        ansiColor('xterm') // Add color to logs for better readability
-        buildDiscarder(logRotator(numToKeepStr: '5')) // Limit build history retention
-        disableConcurrentBuilds() // Prevent overlapping builds
-        timestamps() // Timestamp logs for better traceability
+        buildDiscarder(logRotator(numToKeepStr: '5'))
+        disableConcurrentBuilds()
+        timestamps()
     }
+
     stages {
-        stage('Clone Repository') {
+        stage('Wrap with AnsiColor') {
             steps {
-                echo 'Cloning Git repository...'
-                checkout scm
-            }
-        }
-
-        stage('Run SonarQube Analysis') {
-            steps {
-                script {
-                    echo 'Performing static code analysis with SonarQube...'
-                    withSonarQubeEnv(SONARQUBE_SERVER) {
-                        sh "${SONAR_SCANNER_HOME}/bin/sonar-scanner \
-                            -Dsonar.projectKey=ShoppingApp \
-                            -Dsonar.sources=. \
-                            -Dsonar.language=py,js \
-                            -Dsonar.sourceEncoding=UTF-8"
+                wrap([$class: 'AnsiColorBuildWrapper', 'colorMapName': 'xterm']) {
+                    script {
+                        // From here onwards, all logs will be colored
+                        build()
                     }
-                }
-            }
-        }
-        
-        stage('Check Quality Gate') {
-            steps {
-                timeout(time: 2, unit: 'MINUTES') {
-                    waitForQualityGate abortPipeline: true
-                }
-            }
-        }
-
-        stage('Build Docker Images') {
-            parallel {
-                stage('Build Signin Image') {
-                    steps {
-                        echo 'Building signin Docker image...'
-                        sh "docker build --no-cache -t ${SIGNIN_DOCKERIMAGE_NAME} -f ${SIGNIN_DOCKERFILE} ."
-                    }
-                }
-                stage('Build Signup Image') {
-                    steps {
-                        echo 'Building signup Docker image...'
-                        sh "docker build --no-cache -t ${SIGNUP_DOCKERIMAGE_NAME} -f ${SIGNUP_DOCKERFILE} ."
-                    }
-                }
-                stage('Build React Image') {
-                    steps {
-                        echo 'Building React frontend Docker image...'
-                        sh "docker build --no-cache -t ${REACT_DOCKERIMAGE_NAME} -f ${REACT_DOCKERFILE} ."
-                    }
-                }
-            }
-        }
-
-        stage('DockerHub Login') {
-            steps {
-                echo 'Logging in to DockerHub...'
-                sh "docker login -u '${DOCKER_CREDENTIALS_USR}' -p '${DOCKER_CREDENTIALS_PSW}'"
-            }
-        }
-
-        stage('Push Docker Images') {
-            steps {
-                echo 'Pushing Docker images to DockerHub...'
-                script {
-                    sh "docker push ${SIGNIN_DOCKERIMAGE_NAME}"
-                    sh "docker push ${SIGNUP_DOCKERIMAGE_NAME}"
-                    sh "docker push ${REACT_DOCKERIMAGE_NAME}"
-                }
-            }
-        }
-
-        stage('Deploy Containers') {
-            steps {
-                echo 'Deploying Docker containers...'
-                script {
-                    sh "docker run -d --restart=always -p 80:80 ${REACT_DOCKERIMAGE_NAME}"
-                    sh "docker run -d --restart=always -p 8001:8001 ${SIGNIN_DOCKERIMAGE_NAME}"
-                    sh "docker run -d --restart=always -p 8000:8000 ${SIGNUP_DOCKERIMAGE_NAME}"
                 }
             }
         }
     }
+
     post {
         always {
             echo 'Cleaning up workspace...'
@@ -115,5 +47,65 @@ pipeline {
         failure {
             echo 'Pipeline failed! Investigate and resolve issues.'
         }
+    }
+}
+
+def build() {
+    stage('Clone Repository') {
+        echo 'Cloning Git repository...'
+        checkout scm
+    }
+
+    stage('Run SonarQube Analysis') {
+        echo 'Performing static code analysis with SonarQube...'
+        withSonarQubeEnv(env.SONARQUBE_SERVER) {
+            sh "${env.SONAR_SCANNER_HOME}/bin/sonar-scanner \
+                -Dsonar.projectKey=ShoppingApp \
+                -Dsonar.sources=. \
+                -Dsonar.language=py,js \
+                -Dsonar.sourceEncoding=UTF-8"
+        }
+    }
+
+    stage('Check Quality Gate') {
+        timeout(time: 2, unit: 'MINUTES') {
+            waitForQualityGate abortPipeline: true
+        }
+    }
+
+    stage('Build Docker Images') {
+        parallel (
+            'Build Signin Image': {
+                echo 'Building signin Docker image...'
+                sh "docker build --no-cache -t ${env.SIGNIN_DOCKERIMAGE_NAME} -f ${env.SIGNIN_DOCKERFILE} ."
+            },
+            'Build Signup Image': {
+                echo 'Building signup Docker image...'
+                sh "docker build --no-cache -t ${env.SIGNUP_DOCKERIMAGE_NAME} -f ${env.SIGNUP_DOCKERFILE} ."
+            },
+            'Build React Image': {
+                echo 'Building React frontend Docker image...'
+                sh "docker build --no-cache -t ${env.REACT_DOCKERIMAGE_NAME} -f ${env.REACT_DOCKERFILE} ."
+            }
+        )
+    }
+
+    stage('DockerHub Login') {
+        echo 'Logging in to DockerHub...'
+        sh "docker login -u '${env.DOCKER_CREDENTIALS_USR}' -p '${env.DOCKER_CREDENTIALS_PSW}'"
+    }
+
+    stage('Push Docker Images') {
+        echo 'Pushing Docker images to DockerHub...'
+        sh "docker push ${env.SIGNIN_DOCKERIMAGE_NAME}"
+        sh "docker push ${env.SIGNUP_DOCKERIMAGE_NAME}"
+        sh "docker push ${env.REACT_DOCKERIMAGE_NAME}"
+    }
+
+    stage('Deploy Containers') {
+        echo 'Deploying Docker containers...'
+        sh "docker run -d --restart=always -p 80:80 ${env.REACT_DOCKERIMAGE_NAME}"
+        sh "docker run -d --restart=always -p 8001:8001 ${env.SIGNIN_DOCKERIMAGE_NAME}"
+        sh "docker run -d --restart=always -p 8000:8000 ${env.SIGNUP_DOCKERIMAGE_NAME}"
     }
 }
