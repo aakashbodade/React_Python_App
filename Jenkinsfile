@@ -11,72 +11,80 @@ pipeline {
         SIGNIN_DOCKERIMAGE_NAME = "aakashbodade/signin:${IMAGE_TAG}"
         SIGNUP_DOCKERIMAGE_NAME = "aakashbodade/signup:${IMAGE_TAG}"
         DOCKER_CREDENTIALS = credentials('DOCKERHUB_CREDENTIALS')
-        SONARQUBE_SERVER = 'SonarQube' // The name you gave in Jenkins configuration
-        SONAR_SCANNER_HOME = tool 'SonarQubeScanner' // If you installed SonarQube Scanner as a tool
+        SONARQUBE_SERVER = 'SonarQube'
+        SONAR_SCANNER_HOME = tool 'SonarQubeScanner'
     }
     agent any
+    options {
+        ansiColor('xterm') // Add color to logs for better readability
+        buildDiscarder(logRotator(numToKeepStr: '5')) // Limit build history retention
+        disableConcurrentBuilds() // Prevent overlapping builds
+        timestamps() // Timestamp logs for better traceability
+    }
     stages {
-        stage('Cloning git repository') {
+        stage('Clone Repository') {
             steps {
+                echo 'Cloning Git repository...'
                 checkout scm
             }
         }
 
-        stage('SonarQube Analysis') {
+        stage('Run SonarQube Analysis') {
             steps {
                 script {
-                    // Run SonarQube analysis
+                    echo 'Performing static code analysis with SonarQube...'
                     withSonarQubeEnv(SONARQUBE_SERVER) {
-                        sh "${SONAR_SCANNER_HOME}/bin/sonar-scanner -Dsonar.projectKey=ShoppingApp -Dsonar.sources=. -Dsonar.language=py,js -Dsonar.sourceEncoding=UTF-8"
+                        sh "${SONAR_SCANNER_HOME}/bin/sonar-scanner \
+                            -Dsonar.projectKey=ShoppingApp \
+                            -Dsonar.sources=. \
+                            -Dsonar.language=py,js \
+                            -Dsonar.sourceEncoding=UTF-8"
                     }
                 }
             }
         }
         
-        stage('Quality Gate') {
+        stage('Check Quality Gate') {
             steps {
-                timeout(time: 1, unit: 'MINUTES') {
+                timeout(time: 2, unit: 'MINUTES') {
                     waitForQualityGate abortPipeline: true
                 }
             }
         }
 
-        stage('Building Docker Images') {
+        stage('Build Docker Images') {
             parallel {
-                stage('Building signin docker image') {
+                stage('Build Signin Image') {
                     steps {
-                        script {
-                            sh "docker build -t ${SIGNIN_DOCKERIMAGE_NAME} -f ${SIGNIN_DOCKERFILE} ."
-                        }
+                        echo 'Building signin Docker image...'
+                        sh "docker build --no-cache -t ${SIGNIN_DOCKERIMAGE_NAME} -f ${SIGNIN_DOCKERFILE} ."
                     }
                 }
-                stage('Building signup docker image') {
+                stage('Build Signup Image') {
                     steps {
-                        script {
-                            sh "docker build -t ${SIGNUP_DOCKERIMAGE_NAME} -f ${SIGNUP_DOCKERFILE} ."
-                        }
+                        echo 'Building signup Docker image...'
+                        sh "docker build --no-cache -t ${SIGNUP_DOCKERIMAGE_NAME} -f ${SIGNUP_DOCKERFILE} ."
                     }
                 }
-                stage('Building react docker image') {
+                stage('Build React Image') {
                     steps {
-                        script {
-                            sh "docker build -t ${REACT_DOCKERIMAGE_NAME} -f ${REACT_DOCKERFILE} ."
-                        }
+                        echo 'Building React frontend Docker image...'
+                        sh "docker build --no-cache -t ${REACT_DOCKERIMAGE_NAME} -f ${REACT_DOCKERFILE} ."
                     }
                 }
             }
         }
 
-        stage("Dockerhub login") {
+        stage('DockerHub Login') {
             steps {
-                script {
-                    sh "docker login -u '${DOCKER_CREDENTIALS_USR}' -p '${DOCKER_CREDENTIALS_PSW}'"
-                }
+                echo 'Logging in to DockerHub...'
+                sh "docker login -u '${DOCKER_CREDENTIALS_USR}' -p '${DOCKER_CREDENTIALS_PSW}'"
             }
         }
 
-        stage("Push Image to DockerHub") {
+        stage('Push Docker Images') {
             steps {
+                echo 'Pushing Docker images to DockerHub...'
                 script {
                     sh "docker push ${SIGNIN_DOCKERIMAGE_NAME}"
                     sh "docker push ${SIGNUP_DOCKERIMAGE_NAME}"
@@ -85,12 +93,13 @@ pipeline {
             }
         }
 
-        stage("Running images on Docker containers") {
+        stage('Deploy Containers') {
             steps {
+                echo 'Deploying Docker containers...'
                 script {
-                    sh "docker run -d -p 80:80 ${REACT_DOCKERIMAGE_NAME}"
-                    sh "docker run -d -p 8001:8001 ${SIGNIN_DOCKERIMAGE_NAME}"
-                    sh "docker run -d -p 8000:8000 ${SIGNUP_DOCKERIMAGE_NAME}"
+                    sh "docker run -d --restart=always -p 80:80 ${REACT_DOCKERIMAGE_NAME}"
+                    sh "docker run -d --restart=always -p 8001:8001 ${SIGNIN_DOCKERIMAGE_NAME}"
+                    sh "docker run -d --restart=always -p 8000:8000 ${SIGNUP_DOCKERIMAGE_NAME}"
                 }
             }
         }
@@ -101,10 +110,10 @@ pipeline {
             cleanWs()
         }
         success {
-            echo 'Build succeeded!'
+            echo 'Pipeline completed successfully!'
         }
         failure {
-            echo 'Build failed!'
+            echo 'Pipeline failed! Investigate and resolve issues.'
         }
     }
 }
