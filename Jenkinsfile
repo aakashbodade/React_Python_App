@@ -38,7 +38,6 @@ pipeline {
                     sh "${env.SONAR_SCANNER_HOME}/bin/sonar-scanner \
                         -Dsonar.projectKey=ShoppingApp \
                         -Dsonar.sources=. \
-                        -Dsonar.language=py,js \
                         -Dsonar.sourceEncoding=UTF-8"
                 }
             }
