@@ -31,25 +31,25 @@ pipeline {
             }
         }
 
-        // stage('Run SonarQube Analysis') {
-        //     steps {
-        //         echo 'Performing static code analysis with SonarQube...'
-        //         withSonarQubeEnv(env.SONARQUBE_SERVER) {
-        //             sh "${env.SONAR_SCANNER_HOME}/bin/sonar-scanner \
-        //                 -Dsonar.projectKey=ShoppingApp \
-        //                 -Dsonar.sources=. \
-        //                 -Dsonar.sourceEncoding=UTF-8"
-        //         }
-        //     }
-        // }
+        stage('Run SonarQube Analysis') {
+            steps {
+                echo 'Performing static code analysis with SonarQube...'
+                withSonarQubeEnv(env.SONARQUBE_SERVER) {
+                    sh "${env.SONAR_SCANNER_HOME}/bin/sonar-scanner \
+                        -Dsonar.projectKey=ShoppingApp \
+                        -Dsonar.sources=. \
+                        -Dsonar.sourceEncoding=UTF-8"
+                }
+            }
+        }
 
-        // stage('Check Quality Gate') {
-        //     steps {
-        //         timeout(time: 2, unit: 'MINUTES') {
-        //             waitForQualityGate abortPipeline: true
-        //         }
-        //     }
-        // }
+        stage('Check Quality Gate') {
+            steps {
+                timeout(time: 2, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: true
+                }
+            }
+        }
 
         stage('Build Docker Images') {
             steps {
