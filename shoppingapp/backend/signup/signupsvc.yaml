@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: signup-deployment
+spec:
+  replicas: 2
+  strategy: 
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app: shoppingapp
+  template:
+    metadata:
+      labels:
+        app: shoppingapp
+    spec:
+      containers:
+      - name: signup-container
+        image: aakashbodade/signup
+        ports:
+        - containerPort: 8000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: signup-service
+spec:
+  selector:
+    app: shoppingapp
+  ports:
+  - port: 8000
+    targetPort: 8000
+    protocol: TCP
+  type: ClusterIP
+
+
