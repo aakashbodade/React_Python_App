@@ -11,8 +11,8 @@ function App() {
   const handleAction = async () => {
     const url =
       mode === "signup"
-        ? "http://localhost:8000/signup" // Signup microservice
-        : "http://localhost:8001/signin"; // Signin microservice
+        ? "http://localhost:8001/signup" // Signup microservice
+        : "http://localhost:8000/signin"; // Signin microservice
 
     try {
       const response = await axios.post(url, { username, password });

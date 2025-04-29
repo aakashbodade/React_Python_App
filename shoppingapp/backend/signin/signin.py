@@ -3,27 +3,30 @@ from pydantic import BaseModel
 import psycopg2
 from psycopg2.extras import RealDictCursor
 from passlib.hash import bcrypt
-
-from psycopg2 import sql, OperationalError
 from fastapi.middleware.cors import CORSMiddleware
+from dotenv import load_dotenv
+import os
+import mangum
+
+load_dotenv()
 
 app = FastAPI()
 
 # Add CORS Middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # Frontend origin
+    allow_origins=["http://localhost:3000"],  # In production, specify actual origins
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Database configuration
-DB_HOST = "host.docker.internal"
-DB_NAME = "shoppingapp"
-DB_USER = "aakash"
-DB_PASSWORD = "Aakash1997"
-DB_PORT = "5433" 
+# Database configuration using environment variables for security
+DB_HOST = os.environ.get("DB_HOST")
+DB_NAME = os.environ.get("DB_NAME")
+DB_USER = os.environ.get("DB_USER")
+DB_PASSWORD = os.environ.get("DB_PASSWORD")
+DB_PORT = os.environ.get("DB_PORT", "5432")
 
 # Schema for signin data
 class SigninData(BaseModel):
@@ -35,7 +38,11 @@ def signin(user: SigninData):
     try:
         # Connect to PostgreSQL
         conn = psycopg2.connect(
-            host=DB_HOST, database=DB_NAME, user=DB_USER, password=DB_PASSWORD,  port=DB_PORT
+            host=DB_HOST, 
+            database=DB_NAME, 
+            user=DB_USER, 
+            password=DB_PASSWORD,  
+            port=DB_PORT
         )
         cursor = conn.cursor(cursor_factory=RealDictCursor)
 
@@ -51,3 +58,6 @@ def signin(user: SigninData):
         return {"message": "Sign-in successful!"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+# Create handler for AWS Lambda
+handler = mangum.Mangum(app)
