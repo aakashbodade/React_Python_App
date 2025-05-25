@@ -69,6 +69,5 @@ def signup(user: SignupData):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-
 # Create handler for AWS Lambda
-handler = mangum.Mangum(app)
+# handler = mangum.Mangum(app)

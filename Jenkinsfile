@@ -77,7 +77,7 @@ pipeline {
 
 
                             echo "Running ESLint..."
-                            eslint shoppingapp/frontend/src/ --ext .js,.jsx --format json --output-file eslint-report.json || true
+                            eslint shoppingapp/frontend/ --ext .js,.jsx --format json --output-file eslint-report.json || true
                             
                             echo "Running Prettier check..."
                             prettier --check shoppingapp/frontend/src/ || true
