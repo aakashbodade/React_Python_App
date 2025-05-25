@@ -35,18 +35,20 @@ pipeline {
             parallel {
                 stage('Python Linting') {
                     steps {
-                        sh '''                            
+                        sh '''    
+                            pip install flake8 black isort mypy bandit safety
+
                             echo "Running Black formatter check..."
-                            black --check --diff signin.py signup.py || true
+                            black --check --diff shoppingapp/backend/signin/signin.py shoppingapp/backend/signup/signup.py || true
                             
                             echo "Running isort import sorting check..."
-                            isort --check-only signin.py signup.py || true
+                            isort --check-only shoppingapp/backend/signin/signin.py shoppingapp/backend/signup/signup.py || true
                             
                             echo "Running Flake8 linting..."
-                            flake8 signin.py signup.py --max-line-length=88 --extend-ignore=E203,W503
+                            flake8 shoppingapp/backend/signin/signin.py shoppingapp/backend/signup/signup.py --max-line-length=88 --extend-ignore=E203,W503
                             
                             echo "Running MyPy type checking..."
-                            mypy signin.py signup.py --ignore-missing-imports || true
+                            mypy shoppingapp/backend/signin/signin.py shoppingapp/backend/signup/signup.py --ignore-missing-imports || true
                             
                             echo "Running Bandit security scan..."
                             bandit -r . -f json -o bandit-report.json || true
@@ -64,12 +66,15 @@ pipeline {
 
                 stage('Frontend Linting') {
                     steps {
-                        sh '''                            
+                        sh '''       
+
+                            npm install -g eslint prettier
+
                             echo "Running ESLint..."
-                            eslint src/ --ext .js,.jsx --format json --output-file eslint-report.json || true
+                            eslint shoppingapp/frontend/src/ --ext .js,.jsx --format json --output-file eslint-report.json || true
                             
                             echo "Running Prettier check..."
-                            prettier --check src/ || true
+                            prettier --check shoppingapp/frontend/src/ || true
                             
                             echo "Running npm audit..."
                             npm audit --audit-level moderate --json > npm-audit.json || true
@@ -156,7 +161,9 @@ pipeline {
     post {
         always {
             echo 'Cleaning up workspace...'
+            node {
             cleanWs()
+        }
         }
         success {
             echo 'Pipeline completed successfully!'
