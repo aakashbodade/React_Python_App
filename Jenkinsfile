@@ -37,7 +37,7 @@ pipeline {
                     steps {
                         sh '''    
                             python3 -m venv venv
-                            source venv/bin/activate
+                            . venv/bin/activate
                             pip install black isort mypy bandit safety
 
 
@@ -71,7 +71,10 @@ pipeline {
                     steps {
                         sh '''       
 
-                            npm install -g eslint prettier
+                            npm install --save-dev eslint prettier
+                            npx eslint .
+                            npx prettier --check .
+
 
                             echo "Running ESLint..."
                             eslint shoppingapp/frontend/src/ --ext .js,.jsx --format json --output-file eslint-report.json || true
