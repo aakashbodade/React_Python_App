@@ -101,6 +101,7 @@ pipeline {
                                 ${SONAR_SCANNER_HOME}/bin/sonar-scanner \
                                 -Dsonar.projectKey=ShoppingApp \
                                 -Dsonar.sources=. \
+                                -Dsonar.exclusions=**/venv/**,**/__pycache__/**,**/*.pyc \
                                 -Dsonar.sourceEncoding=UTF-8
                             """
                         }
