@@ -1,21 +1,21 @@
 pipeline {
+    agent any
+
     environment {
         IMAGE_REPO_NAME = "shoppingapp"
-        IMAGE_TAG = "${env.BUILD_NUMBER}"
+        IMAGE_TAG = "${BUILD_NUMBER}"
         AWS_DEFAULT_REGION = "ap-south-1"
         AWS_ACCOUNT_ID = "120569600896"
         REACT_DOCKERFILE = "shoppingapp/frontend/Dockerfile"
         SIGNIN_DOCKERFILE = "shoppingapp/backend/signin/Dockerfile"
         SIGNUP_DOCKERFILE = "shoppingapp/backend/signup/Dockerfile"
-        REACT_DOCKERIMAGE_NAME = "aakashbodade/react:${IMAGE_TAG}" 
+        REACT_DOCKERIMAGE_NAME = "aakashbodade/react:${IMAGE_TAG}"
         SIGNIN_DOCKERIMAGE_NAME = "aakashbodade/signin:${IMAGE_TAG}"
         SIGNUP_DOCKERIMAGE_NAME = "aakashbodade/signup:${IMAGE_TAG}"
         DOCKER_CREDENTIALS = credentials('DOCKERHUB_CREDENTIALS')
         SONARQUBE_SERVER = 'SonarQube'
         SONAR_SCANNER_HOME = tool 'SonarQubeScanner'
     }
-
-    agent any
 
     options {
         buildDiscarder(logRotator(numToKeepStr: '5'))
@@ -31,14 +31,69 @@ pipeline {
             }
         }
 
-        stage('Run SonarQube Analysis') {
-            steps {
-                echo 'Performing static code analysis with SonarQube...'
-                withSonarQubeEnv(env.SONARQUBE_SERVER) {
-                    sh "${env.SONAR_SCANNER_HOME}/bin/sonar-scanner \
-                        -Dsonar.projectKey=ShoppingApp \
-                        -Dsonar.sources=. \
-                        -Dsonar.sourceEncoding=UTF-8"
+        stage('Code Quality & Security Scan') {
+            parallel {
+                stage('Python Linting') {
+                    steps {
+                        sh '''                            
+                            echo "Running Black formatter check..."
+                            black --check --diff signin.py signup.py || true
+                            
+                            echo "Running isort import sorting check..."
+                            isort --check-only signin.py signup.py || true
+                            
+                            echo "Running Flake8 linting..."
+                            flake8 signin.py signup.py --max-line-length=88 --extend-ignore=E203,W503
+                            
+                            echo "Running MyPy type checking..."
+                            mypy signin.py signup.py --ignore-missing-imports || true
+                            
+                            echo "Running Bandit security scan..."
+                            bandit -r . -f json -o bandit-report.json || true
+                            
+                            echo "Running Safety dependency check..."
+                            safety check --json --output safety-report.json || true
+                        '''
+                    }
+                    post {
+                        always {
+                            archiveArtifacts artifacts: '*-report.json', allowEmptyArchive: true
+                        }
+                    }
+                }
+
+                stage('Frontend Linting') {
+                    steps {
+                        sh '''                            
+                            echo "Running ESLint..."
+                            eslint src/ --ext .js,.jsx --format json --output-file eslint-report.json || true
+                            
+                            echo "Running Prettier check..."
+                            prettier --check src/ || true
+                            
+                            echo "Running npm audit..."
+                            npm audit --audit-level moderate --json > npm-audit.json || true
+                        '''
+                    }
+                    post {
+                        always {
+                            archiveArtifacts artifacts: 'eslint-report.json, npm-audit.json', allowEmptyArchive: true
+                        }
+                    }
+                }
+
+                stage('SonarQube Scan') {
+                    steps {
+                        echo 'Performing static code analysis with SonarQube...'
+                        withSonarQubeEnv("${SONARQUBE_SERVER}") {
+                            sh """
+                                ${SONAR_SCANNER_HOME}/bin/sonar-scanner \
+                                -Dsonar.projectKey=ShoppingApp \
+                                -Dsonar.sources=. \
+                                -Dsonar.sourceEncoding=UTF-8
+                            """
+                        }
+                    }
                 }
             }
         }
@@ -57,15 +112,15 @@ pipeline {
                     parallel(
                         'Build Signin Image': {
                             echo 'Building signin Docker image...'
-                            sh "docker build --no-cache -t ${env.SIGNIN_DOCKERIMAGE_NAME} -f ${env.SIGNIN_DOCKERFILE} ."
+                            sh "docker build --no-cache -t ${SIGNIN_DOCKERIMAGE_NAME} -f ${SIGNIN_DOCKERFILE} ."
                         },
                         'Build Signup Image': {
                             echo 'Building signup Docker image...'
-                            sh "docker build --no-cache -t ${env.SIGNUP_DOCKERIMAGE_NAME} -f ${env.SIGNUP_DOCKERFILE} ."
+                            sh "docker build --no-cache -t ${SIGNUP_DOCKERIMAGE_NAME} -f ${SIGNUP_DOCKERFILE} ."
                         },
                         'Build React Image': {
                             echo 'Building React frontend Docker image...'
-                            sh "docker build --no-cache -t ${env.REACT_DOCKERIMAGE_NAME} -f ${env.REACT_DOCKERFILE} ."
+                            sh "docker build --no-cache -t ${REACT_DOCKERIMAGE_NAME} -f ${REACT_DOCKERFILE} ."
                         }
                     )
                 }
@@ -75,27 +130,27 @@ pipeline {
         stage('DockerHub Login') {
             steps {
                 echo 'Logging in to DockerHub...'
-                sh "docker login -u '${env.DOCKER_CREDENTIALS_USR}' -p '${env.DOCKER_CREDENTIALS_PSW}'"
+                sh "docker login -u '${DOCKER_CREDENTIALS_USR}' -p '${DOCKER_CREDENTIALS_PSW}'"
             }
         }
 
         stage('Push Docker Images') {
             steps {
                 echo 'Pushing Docker images to DockerHub...'
-                sh "docker push ${env.SIGNIN_DOCKERIMAGE_NAME}"
-                sh "docker push ${env.SIGNUP_DOCKERIMAGE_NAME}"
-                sh "docker push ${env.REACT_DOCKERIMAGE_NAME}"
+                sh "docker push ${SIGNIN_DOCKERIMAGE_NAME}"
+                sh "docker push ${SIGNUP_DOCKERIMAGE_NAME}"
+                sh "docker push ${REACT_DOCKERIMAGE_NAME}"
             }
         }
 
-        stage('Deploy Containers') {
-            steps {
-                echo 'Deploying Docker containers...'
-                sh "docker run -d --restart=always -p 80:80 ${env.REACT_DOCKERIMAGE_NAME}"
-                sh "docker run -d --restart=always -p 8001:8001 ${env.SIGNIN_DOCKERIMAGE_NAME}"
-                sh "docker run -d --restart=always -p 8000:8000 ${env.SIGNUP_DOCKERIMAGE_NAME}"
-            }
-        }
+        // stage('Deploy Containers') {
+        //     steps {
+        //         echo 'Deploying Docker containers...'
+        //         sh "docker run -d --restart=always -p 80:80 ${REACT_DOCKERIMAGE_NAME}"
+        //         sh "docker run -d --restart=always -p 8001:8001 ${SIGNIN_DOCKERIMAGE_NAME}"
+        //         sh "docker run -d --restart=always -p 8000:8000 ${SIGNUP_DOCKERIMAGE_NAME}"
+        //     }
+        // }
     }
 
     post {
