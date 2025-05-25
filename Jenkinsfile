@@ -38,7 +38,7 @@ pipeline {
                         sh '''    
                             python3 -m venv venv
                             . venv/bin/activate
-                            pip install black isort mypy bandit safety
+                            pip install black isort flake8 mypy bandit safety 
 
 
                             echo "Running Black formatter check..."
