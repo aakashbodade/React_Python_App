@@ -36,7 +36,10 @@ pipeline {
                 stage('Python Linting') {
                     steps {
                         sh '''    
-                            pip install flake8 black isort mypy bandit safety
+                            python3 -m venv venv
+                            source venv/bin/activate
+                            pip install black isort mypy bandit safety
+
 
                             echo "Running Black formatter check..."
                             black --check --diff shoppingapp/backend/signin/signin.py shoppingapp/backend/signup/signup.py || true
