@@ -79,7 +79,7 @@ pipeline {
 
                             echo "Running ESLint without cache..."
                             echo "Running ESLint..."
-                            eslint shoppingapp/frontend/ --config shoppingapp/frontend/eslint.config.js --no-cache --ext .js,.jsx --format json --output-file eslint-report.json || true
+                            eslint /shoppingapp/frontend/eslint.config.js --config shoppingapp/frontend/eslint.config.js --no-cache --ext .js,.jsx --format json --output-file eslint-report.json || true
 
 
                             echo "Running Prettier check without cache..."
