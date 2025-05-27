@@ -30,33 +30,33 @@ spec:
           image: aakashbodade/signin:latest
           imagePullPolicy: Always
           ports:
-          - containerPort: 8000
+            - containerPort: 8000
           env:
-          - name: DB_HOST
-            valueFrom:
-              configMapKeyRef:
-                name: db-config
-                key: DB_HOST
-          - name: DB_PORT
-            valueFrom:
-              configMapKeyRef:
-                name: db-config
-                key: DB_PORT
-          - name: DB_NAME
-            valueFrom:
-              configMapKeyRef:
-                name: db-config
-                key: DB_NAME
-          - name: DB_USER
-            valueFrom:
-              secretKeyRef:
-                name: db-credentials
-                key: DB_USER
-          - name: DB_PASSWORD
-            valueFrom:
-              secretKeyRef:
-                name: db-credentials
-                key: DB_PASSWORD
+            - name: DB_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: db-config
+                  key: DB_HOST
+            - name: DB_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: db-config
+                  key: DB_PORT
+            - name: DB_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: db-config
+                  key: DB_NAME
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: db-credentials
+                  key: DB_USER
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: db-credentials
+                  key: DB_PASSWORD
           resources:
             requests:
               memory: "256Mi"
@@ -87,7 +87,7 @@ metadata:
     app: shoppingapp
     microservice: signin
 spec:
-  type: ClusterIP  
+  type: ClusterIP
   selector:
     app: shoppingapp
     microservice: signin
@@ -112,6 +112,5 @@ metadata:
   namespace: default
 type: Opaque
 data:
-  DB_USER: cG9zdGdyZXM=   # base64 encoded 'password'
-  DB_PASSWORD: QWFrYXNoMTk5Nw==  # base64 encoded 'securePassword'
-...
+  DB_USER: cG9zdGdyZXM= # base64 encoded 'password'
+  DB_PASSWORD: QWFrYXNoMTk5Nw== # base64 encoded 'securePassword'
