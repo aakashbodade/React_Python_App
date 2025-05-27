@@ -60,11 +60,11 @@ const styles = {
   container: { maxWidth: "400px", margin: "0 auto", textAlign: "center" },
   input: { display: "block", width: "100%", margin: "10px 0", padding: "10px" },
   button: { padding: "10px 20px", backgroundColor: "#007BFF", color: "#fff" },
-  toggleButton: { 
-    padding: "10px 20px", 
-    marginTop: "10px", 
-    backgroundColor: "#6c757d", 
-    color: "#fff" 
+  toggleButton: {
+    padding: "10px 20px",
+    marginTop: "10px",
+    backgroundColor: "#6c757d",
+    color: "#fff",
   },
   successMessage: { color: "green" },
   errorMessage: { color: "red" },
