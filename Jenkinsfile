@@ -78,6 +78,7 @@ pipeline {
                            
                             echo "Running Prettier check without cache..."
                             prettier --check shoppingapp/frontend/src/ --no-cache || true
+                            npx prettier --write .
 
                             echo "Running npm audit..."
                             npm audit --audit-level moderate --json > npm-audit.json || true
