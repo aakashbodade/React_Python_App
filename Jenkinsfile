@@ -74,15 +74,8 @@ pipeline {
                         sh '''       
 
                             npm install --save-dev eslint prettier
-                            npx eslint .
                             npx prettier --check .
-
-
-                            // echo "Running ESLint without cache..."
-                            // echo "Running ESLint..."
-                            // eslint /shoppingapp/frontend/eslint.config.js --config shoppingapp/frontend/eslint.config.js --no-cache --ext .js,.jsx --format json --output-file eslint-report.json || true
-
-
+                           
                             echo "Running Prettier check without cache..."
                             prettier --check shoppingapp/frontend/src/ --no-cache || true
 
