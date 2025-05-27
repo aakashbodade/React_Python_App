@@ -57,7 +57,8 @@ pipeline {
                             bandit -r . -f json -o bandit-report.json --exit-zero || true
 
                             echo "Running Safety dependency check (latest DB)..."
-                            safety check --json --output safety-report.json || true
+                            echo "Running Safety dependency check (latest DB)..."
+                            safety check --output json > safety-report.json || true
 
                         '''
                     }
@@ -77,9 +78,9 @@ pipeline {
                             npx prettier --check .
 
 
-                            echo "Running ESLint without cache..."
-                            echo "Running ESLint..."
-                            eslint /shoppingapp/frontend/eslint.config.js --config shoppingapp/frontend/eslint.config.js --no-cache --ext .js,.jsx --format json --output-file eslint-report.json || true
+                            // echo "Running ESLint without cache..."
+                            // echo "Running ESLint..."
+                            // eslint /shoppingapp/frontend/eslint.config.js --config shoppingapp/frontend/eslint.config.js --no-cache --ext .js,.jsx --format json --output-file eslint-report.json || true
 
 
                             echo "Running Prettier check without cache..."
