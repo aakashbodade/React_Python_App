@@ -17,7 +17,7 @@ pipeline {
         SONAR_SCANNER_HOME = tool 'SonarQubeScanner'
         KUBE_YAML = "shoppingapp/backend/signin/signinsvc.yml"
         COMMIT_MESSAGE = "CI: Update image tag to ${IMAGE_TAG}"
-        JENKINSGITID = "jenkinsgit"
+        // JENKINSGITID = "jenkinsgit"
     }
 
     options {
@@ -168,7 +168,7 @@ pipeline {
 
         stage('Commit & Push to GitHub') {
             steps {
-                sshagent(credentials: [JENKINSGITID]) {
+                sshagent(credentials: ['jenkinsgit']) {
                     script {
                         // Ensure we're on the feature branch
                         sh """
