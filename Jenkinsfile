@@ -15,6 +15,8 @@ pipeline {
         DOCKER_CREDENTIALS = credentials('DOCKERHUB_CREDENTIALS')
         SONARQUBE_SERVER = 'SonarQube'
         SONAR_SCANNER_HOME = tool 'SonarQubeScanner'
+        KUBE_YAML = "shoppingapp/backend/signin/signinsvc.yml"
+        COMMIT_MESSAGE = "CI: Update image tag to ${IMAGE_TAG}"
     }
 
     options {
@@ -151,6 +153,30 @@ pipeline {
                 sh "docker push ${SIGNIN_DOCKERIMAGE_NAME}"
                 sh "docker push ${SIGNUP_DOCKERIMAGE_NAME}"
                 sh "docker push ${REACT_DOCKERIMAGE_NAME}"
+            }
+        }
+
+        stage('Update Image Tag in K8S YAML') {
+            steps {
+                echo "Updating image tag to ${IMAGE_TAG}"
+                sh """
+                    sed -i 's|image: ${SIGNIN_DOCKERIMAGE_NAME}:.*|image: ${SIGNIN_DOCKERIMAGE_NAME}:${IMAGE_TAG}|' ${KUBE_YAML}
+                """
+            }
+        }
+
+        stage('Commit & Push to GitHub') {
+            steps {
+                //withCredentials([usernamePassword(credentialsId: "${GIT_CREDENTIALS_ID}", usernameVariable: 'GIT_USER', passwordVariable: 'GIT_TOKEN')]) {
+                    sh """
+                        git config user.name "aakashbodade"
+                        git config user.email "aakashbodade1990@gmail.com"
+
+                        git add ${KUBE_YAML}
+                        git commit -m "${COMMIT_MESSAGE}" || echo "No changes to commit"
+                        git push https://${GIT_USER}:${GIT_TOKEN}@github.com/your-org/your-repo.git ${GIT_BRANCH}
+                    """
+                }
             }
         }
 
