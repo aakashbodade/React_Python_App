@@ -167,17 +167,24 @@ pipeline {
 
         stage('Commit & Push to GitHub') {
             steps {
-                //withCredentials([usernamePassword(credentialsId: "${GIT_CREDENTIALS_ID}", usernameVariable: 'GIT_USER', passwordVariable: 'GIT_TOKEN')]) {
-                    sh """
+                sshagent(credentials: ['jenkinsgit']) {
+                    script {
+                        // Ensure we're on the feature branch
+                        sh """
+                        git checkout feature || git checkout -b feature
+
                         git config user.name "aakashbodade"
                         git config user.email "aakashbodade1990@gmail.com"
 
-                        git add ${KUBE_YAML}
+                        git add shoppingapp/backend/signin/signinsvc.yml
                         git commit -m "${COMMIT_MESSAGE}" || echo "No changes to commit"
-                        git push -o feature
-                    """
+
+                        git push origin feature
+                        """
+                    }
                 }
             }
+        }
         
 
         // stage('Deploy Containers') {
