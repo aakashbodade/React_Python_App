@@ -1,5 +1,5 @@
 # Step 1: Use a Node.js base image for building
-FROM node:16 AS build
+FROM node:16 AS Build
 
 # Set working directory inside the container
 WORKDIR /app
@@ -21,7 +21,7 @@ RUN npm run build
 FROM nginx:alpine
 
 # Copy built React files from the "build" stage to Nginx's web root
-COPY --from=build /app/build /usr/share/nginx/html
+COPY --from=build /app/Build /usr/share/nginx/html
 
 # Expose port 80 for the web server
 EXPOSE 80

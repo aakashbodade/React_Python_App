@@ -131,7 +131,7 @@ pipeline {
                         },
                         'Build React Image': {
                             echo 'Building React frontend Docker image...'
-                            sh "docker build --no-cache -t ${REACT_DOCKERIMAGE_NAME} -f ${REACT_DOCKERFILE} ."
+                            sh "docker build --no-cache -t ${REACT_DOCKERIMAGE_NAME} -f ${REACT_DOCKERFILE} shoppingapp/frontend"
                         }
                     )
                 }
