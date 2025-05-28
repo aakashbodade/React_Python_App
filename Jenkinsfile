@@ -178,7 +178,7 @@ pipeline {
                     """
                 }
             }
-        }
+        
 
         // stage('Deploy Containers') {
         //     steps {
