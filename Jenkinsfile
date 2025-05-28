@@ -174,7 +174,7 @@ pipeline {
 
                         git add ${KUBE_YAML}
                         git commit -m "${COMMIT_MESSAGE}" || echo "No changes to commit"
-                        git push https://${GIT_USER}:${GIT_TOKEN}@github.com/your-org/your-repo.git ${GIT_BRANCH}
+                        git push -o feature
                     """
                 }
             }
