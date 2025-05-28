@@ -117,28 +117,23 @@ pipeline {
             }
         }
 
-        stage('Building Docker Images') {
-            parallel {
-                stage('Building signin docker image') {
-                    steps {
-                        script {
-                            sh "docker build -t ${SIGNIN_DOCKERIMAGE_NAME} -f ${SIGNIN_DOCKERFILE} ."
+        stage('Build Docker Images') {
+            steps {
+                script {
+                    parallel(
+                        'Build Signin Image': {
+                            echo 'Building signin Docker image...'
+                            sh "docker build --no-cache -t ${SIGNIN_DOCKERIMAGE_NAME} -f ${SIGNIN_DOCKERFILE} ."
+                        },
+                        'Build Signup Image': {
+                            echo 'Building signup Docker image...'
+                            sh "docker build --no-cache -t ${SIGNUP_DOCKERIMAGE_NAME} -f ${SIGNUP_DOCKERFILE} ."
+                        },
+                        'Build React Image': {
+                            echo 'Building React frontend Docker image...'
+                            sh "docker build --no-cache -t ${REACT_DOCKERIMAGE_NAME} -f ${REACT_DOCKERFILE} ."
                         }
-                    }
-                }
-                stage('Building signup docker image') {
-                    steps {
-                        script {
-                            sh "docker build -t ${SIGNUP_DOCKERIMAGE_NAME} -f ${SIGNUP_DOCKERFILE} ."
-                        }
-                    }
-                }
-                stage('Building react docker image') {
-                    steps {
-                        script {
-                            sh "docker build -t ${REACT_DOCKERIMAGE_NAME} -f ${REACT_DOCKERFILE} ."
-                        }
-                    }
+                    )
                 }
             }
         }
