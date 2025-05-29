@@ -23,18 +23,17 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-RUN apt-get update && apt-get install -y libpq5
+RUN apt-get update && apt-get install -y libpq5 && rm -rf /var/lib/apt/lists/*
 
 # Copy dependencies from the builder stage
-COPY --from=builder /app /app
 COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
 COPY --from=builder /usr/local/bin /usr/local/bin
 
-# Copy your FastAPI application code
-COPY . .
+# Copy the specific signup application files
+COPY shoppingapp/backend/signup/ /app/
 
 # Expose the port your FastAPI app listens on
-EXPOSE 8000
+EXPOSE 8001
 
 # Run your FastAPI application with Uvicorn
 CMD ["uvicorn", "signup:app", "--host", "0.0.0.0", "--port", "8001"]
