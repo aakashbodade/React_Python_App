@@ -27,7 +27,7 @@ spec:
     spec:
       containers:
         - name: signup-container
-          image: aakashbodade/signup:latest
+          image: aakashbodade/signup:9-latest
           imagePullPolicy: Always
           ports:
             - containerPort: 8001
