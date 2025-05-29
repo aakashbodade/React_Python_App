@@ -169,11 +169,11 @@ pipeline {
                     cp ${KUBE_YAML} ${KUBE_YAML}.backup
             
                     # Update signin image tag
-                    sed -i 's|aakashbodade/signin:[^[:space:]]*|aakashbodade/signin:${IMAGE_TAG}|g' ${KUBE_YAML}
+                    sed -i 's|aakashbodade/signin:[^[:space:]]*|aakashbodade/signin:${IMAGE_TAG}-latest|g' ${KUBE_YAML}
             
                     # If you have other services in the same YAML file, update them too:
-                    # sed -i 's|aakashbodade/signup:[^[:space:]]*|aakashbodade/signup:${IMAGE_TAG}|g' ${KUBE_YAML}
-                    # sed -i 's|aakashbodade/react:[^[:space:]]*|aakashbodade/react:${IMAGE_TAG}|g' ${KUBE_YAML}
+                    # sed -i 's|aakashbodade/signup:[^[:space:]]*|aakashbodade/signup:${IMAGE_TAG}-latest|g' ${KUBE_YAML}
+                    # sed -i 's|aakashbodade/react:[^[:space:]]*|aakashbodade/react:${IMAGE_TAG}-latest|g' ${KUBE_YAML}
             
                     # Show updated content
                     echo "Updated content of ${KUBE_YAML}:"
