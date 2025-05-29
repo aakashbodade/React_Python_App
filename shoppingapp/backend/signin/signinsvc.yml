@@ -27,7 +27,7 @@ spec:
     spec:
       containers:
         - name: signin-container
-          image: aakashbodade/signin:12-latest
+          image: aakashbodade/signin:2-latest
           imagePullPolicy: Always
           ports:
             - containerPort: 8000
