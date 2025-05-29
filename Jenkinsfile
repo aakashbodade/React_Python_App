@@ -179,8 +179,8 @@ pipeline {
                     sed -i 's|aakashbodade/signin:[^[:space:]]*|aakashbodade/signin:${IMAGE_TAG}|g' ${KUBE_YAML}
             
                     # If you have other services in the same YAML file, update them too:
-                    # sed -i 's|aakashbodade/signup:[^[:space:]]*|aakashbodade/signup:${IMAGE_TAG}|g' ${KUBE_YAML}
-                    # sed -i 's|aakashbodade/react:[^[:space:]]*|aakashbodade/react:${IMAGE_TAG}|g' ${KUBE_YAML}
+                    sed -i 's|aakashbodade/signup:[^[:space:]]*|aakashbodade/signup:${IMAGE_TAG}|g' ${KUBE_YAML}
+                    sed -i 's|aakashbodade/react:[^[:space:]]*|aakashbodade/react:${IMAGE_TAG}|g' ${KUBE_YAML}
             
                     # Show updated content
                     echo "Updated content of ${KUBE_YAML}:"
@@ -213,6 +213,9 @@ pipeline {
                         git config user.email "aakashbodade1990@gmail.com"
 
                         git add shoppingapp/backend/signin/signinsvc.yml
+                        git commit -m "${COMMIT_MESSAGE}" || echo "No changes to commit"
+
+                        git add shoppingapp/backend/signup/signupsvc.yml
                         git commit -m "${COMMIT_MESSAGE}" || echo "No changes to commit"
 
                         git push -o feature
