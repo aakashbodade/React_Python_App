@@ -159,11 +159,39 @@ pipeline {
 
         stage('Update Image Tag in K8S YAML') {
             steps {
-                echo "Updating image tag to ${IMAGE_TAG}"
-                sh """
-                    sed -i 's|image: ${SIGNIN_DOCKERIMAGE_NAME}:.*|image: ${SIGNIN_DOCKERIMAGE_NAME}:${IMAGE_TAG}|' ${KUBE_YAML}
-                """
-            }
+                echo "Updating image tag to ${IMAGE_TAG} in ${KUBE_YAML}"
+                    sh """
+                    # Show current content
+                    echo "Current content of ${KUBE_YAML}:"
+                    cat ${KUBE_YAML}
+            
+                    # Create backup
+                    cp ${KUBE_YAML} ${KUBE_YAML}.backup
+            
+                    # Update signin image tag
+                    sed -i 's|aakashbodade/signin:[^[:space:]]*|aakashbodade/signin:${IMAGE_TAG}|g' ${KUBE_YAML}
+            
+                    # If you have other services in the same YAML file, update them too:
+                    # sed -i 's|aakashbodade/signup:[^[:space:]]*|aakashbodade/signup:${IMAGE_TAG}|g' ${KUBE_YAML}
+                    # sed -i 's|aakashbodade/react:[^[:space:]]*|aakashbodade/react:${IMAGE_TAG}|g' ${KUBE_YAML}
+            
+                    # Show updated content
+                    echo "Updated content of ${KUBE_YAML}:"
+                    cat ${KUBE_YAML}
+            
+                    # Show differences
+                    echo "Changes made:"
+                    diff ${KUBE_YAML}.backup ${KUBE_YAML} || true
+            
+                    # Verify the change was made
+                    if grep -q "aakashbodade/signin:${IMAGE_TAG}" ${KUBE_YAML}; then
+                        echo "✅ Image tag successfully updated to ${IMAGE_TAG}"
+                    else
+                        echo "❌ Failed to update image tag"
+                        exit 1
+                    fi
+                    """
+                }
         }
 
         stage('Commit & Push to GitHub') {
@@ -180,7 +208,7 @@ pipeline {
                         git add shoppingapp/backend/signin/signinsvc.yml
                         git commit -m "${COMMIT_MESSAGE}" || echo "No changes to commit"
 
-                        git push origin feature
+                        git push -o feature
                         """
                     }
                 }
