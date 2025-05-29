@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         IMAGE_REPO_NAME = "shoppingapp"
-        IMAGE_TAG = "${BUILD_NUMBER}"
+        IMAGE_TAG = "${BUILD_NUMBER}-latest"
         AWS_DEFAULT_REGION = "ap-south-1"
         AWS_ACCOUNT_ID = "120569600896"
         REACT_DOCKERFILE = "shoppingapp/frontend/Dockerfile"
@@ -169,11 +169,11 @@ pipeline {
                     cp ${KUBE_YAML} ${KUBE_YAML}.backup
             
                     # Update signin image tag
-                    sed -i 's|aakashbodade/signin:[^[:space:]]*|aakashbodade/signin:${IMAGE_TAG}-latest|g' ${KUBE_YAML}
+                    sed -i 's|aakashbodade/signin:[^[:space:]]*|aakashbodade/signin:${IMAGE_TAG}|g' ${KUBE_YAML}
             
                     # If you have other services in the same YAML file, update them too:
-                    # sed -i 's|aakashbodade/signup:[^[:space:]]*|aakashbodade/signup:${IMAGE_TAG}-latest|g' ${KUBE_YAML}
-                    # sed -i 's|aakashbodade/react:[^[:space:]]*|aakashbodade/react:${IMAGE_TAG}-latest|g' ${KUBE_YAML}
+                    # sed -i 's|aakashbodade/signup:[^[:space:]]*|aakashbodade/signup:${IMAGE_TAG}|g' ${KUBE_YAML}
+                    # sed -i 's|aakashbodade/react:[^[:space:]]*|aakashbodade/react:${IMAGE_TAG}|g' ${KUBE_YAML}
             
                     # Show updated content
                     echo "Updated content of ${KUBE_YAML}:"
