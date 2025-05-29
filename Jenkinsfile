@@ -214,14 +214,14 @@ pipeline {
                 }
             }
         }
-    }
-
+    
         stage('Cleanup') {
             steps {
                 echo 'Cleaning up workspace...'
                 cleanWs()
             }
         }
+    }   
 }
 
   // stage('Deploy Containers') {
