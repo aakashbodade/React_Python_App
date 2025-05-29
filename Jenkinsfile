@@ -242,3 +242,5 @@ pipeline {
         //         sh "docker run -d --restart=always -p 8000:8000 ${SIGNUP_DOCKERIMAGE_NAME}"
         //     }
         // }
+    }
+}
