@@ -214,9 +214,17 @@ pipeline {
                 }
             }
         }
-        
+    }
 
-        // stage('Deploy Containers') {
+        stage('Cleanup') {
+            steps {
+                echo 'Cleaning up workspace...'
+                cleanWs()
+            }
+        }
+}
+
+  // stage('Deploy Containers') {
         //     steps {
         //         echo 'Deploying Docker containers...'
         //         sh "docker run -d --restart=always -p 80:80 ${REACT_DOCKERIMAGE_NAME}"
@@ -224,20 +232,3 @@ pipeline {
         //         sh "docker run -d --restart=always -p 8000:8000 ${SIGNUP_DOCKERIMAGE_NAME}"
         //     }
         // }
-    }
-
-    // post {
-    //     always {
-    //         echo 'Cleaning up workspace...'
-            
-    //         cleanWs()
-        
-    //     }
-    //     success {
-    //         echo 'Pipeline completed successfully!'
-    //     }
-    //     failure {
-    //         echo 'Pipeline failed! Investigate and resolve issues.'
-    //     }
-    // }
-}
