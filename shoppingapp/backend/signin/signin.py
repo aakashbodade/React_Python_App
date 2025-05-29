@@ -1,12 +1,13 @@
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
-import psycopg2
-from psycopg2.extras import RealDictCursor
-from passlib.hash import bcrypt
-from fastapi.middleware.cors import CORSMiddleware
-from dotenv import load_dotenv
 import os
+
 import mangum
+import psycopg2
+from dotenv import load_dotenv
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from passlib.hash import bcrypt
+from psycopg2.extras import RealDictCursor
+from pydantic import BaseModel
 
 load_dotenv()
 
@@ -28,21 +29,23 @@ DB_USER = os.environ.get("DB_USER")
 DB_PASSWORD = os.environ.get("DB_PASSWORD")
 DB_PORT = os.environ.get("DB_PORT", "5432")
 
+
 # Schema for signin data
 class SigninData(BaseModel):
     username: str
     password: str
+
 
 @app.post("/signin")
 def signin(user: SigninData):
     try:
         # Connect to PostgreSQL
         conn = psycopg2.connect(
-            host=DB_HOST, 
-            database=DB_NAME, 
-            user=DB_USER, 
-            password=DB_PASSWORD,  
-            port=DB_PORT
+            host=DB_HOST,
+            database=DB_NAME,
+            user=DB_USER,
+            password=DB_PASSWORD,
+            port=DB_PORT,
         )
         cursor = conn.cursor(cursor_factory=RealDictCursor)
 
@@ -60,4 +63,4 @@ def signin(user: SigninData):
         raise HTTPException(status_code=500, detail=str(e))
 
 # Create handler for AWS Lambda
-handler = mangum.Mangum(app)
+# handler = mangum.Mangum(app)

@@ -1,5 +1,3 @@
 {
-    "python.analysis.extraPaths": [
-        "./shoppingapp/backend/signin/python"
-    ]
+  "python.analysis.extraPaths": ["./shoppingapp/backend/signin/python"]
 }
