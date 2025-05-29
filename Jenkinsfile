@@ -226,18 +226,18 @@ pipeline {
         // }
     }
 
-    post {
-        always {
-            echo 'Cleaning up workspace...'
+    // post {
+    //     always {
+    //         echo 'Cleaning up workspace...'
             
-            cleanWs()
+    //         cleanWs()
         
-        }
-        success {
-            echo 'Pipeline completed successfully!'
-        }
-        failure {
-            echo 'Pipeline failed! Investigate and resolve issues.'
-        }
-    }
+    //     }
+    //     success {
+    //         echo 'Pipeline completed successfully!'
+    //     }
+    //     failure {
+    //         echo 'Pipeline failed! Investigate and resolve issues.'
+    //     }
+    // }
 }
