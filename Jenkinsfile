@@ -16,6 +16,7 @@ pipeline {
         SONARQUBE_SERVER = 'SonarQube'
         SONAR_SCANNER_HOME = tool 'SonarQubeScanner'
         KUBE_YAML = "shoppingapp/backend/signin/signinsvc.yml"
+        KUBE_YAML_SIGNUP = "shoppingapp/backend/signup/signupsvc.yml"
         COMMIT_MESSAGE = "CI: Update image tag to ${IMAGE_TAG}"
         // JENKINSGITID = "jenkinsgit"
     }
@@ -177,7 +178,7 @@ pipeline {
             
                     # Update image tag
                     sed -i 's|aakashbodade/signin:[^[:space:]]*|aakashbodade/signin:${IMAGE_TAG}|g' ${KUBE_YAML}
-                    sed -i 's|aakashbodade/signup:[^[:space:]]*|aakashbodade/signup:${IMAGE_TAG}|g' ${KUBE_YAML}
+                    sed -i 's|aakashbodade/signup:[^[:space:]]*|aakashbodade/signup:${IMAGE_TAG}|g' ${KUBE_YAML_SIGNUP}
                     
             
                     # Show updated content
