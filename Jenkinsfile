@@ -27,6 +27,13 @@ pipeline {
     }
 
     stages {
+         stage('Cleanup previous build data') {
+            steps {
+                echo 'Cleaning up workspace...'
+                cleanWs()
+            }
+        }
+
         stage('Clone Repository') {
             steps {
                 echo 'Cloning Git repository...'
