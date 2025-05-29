@@ -169,7 +169,7 @@ pipeline {
                 echo "Updating image tag to ${IMAGE_TAG} in ${KUBE_YAML}"
                     sh """
                     # Show current content
-                    echo "Current content of ${KUBE_YAML}:"
+                    #echo "Current content of ${KUBE_YAML}:"
                     cat ${KUBE_YAML}
             
                     # Create backup
@@ -178,7 +178,7 @@ pipeline {
                     # Update image tag
                     sed -i 's|aakashbodade/signin:[^[:space:]]*|aakashbodade/signin:${IMAGE_TAG}|g' ${KUBE_YAML}
                     sed -i 's|aakashbodade/signup:[^[:space:]]*|aakashbodade/signup:${IMAGE_TAG}|g' ${KUBE_YAML}
-                    #sed -i 's|aakashbodade/react:[^[:space:]]*|aakashbodade/react:${IMAGE_TAG}|g' ${KUBE_YAML}
+                    
             
                     # Show updated content
                     echo "Updated content of ${KUBE_YAML}:"
