@@ -16,6 +16,7 @@ pipeline {
         SONARQUBE_SERVER = 'SonarQube'
         SONAR_SCANNER_HOME = tool 'SonarQubeScanner'
         KUBE_YAML = "shoppingapp/backend/signin/signinsvc.yml"
+        KUBE_YAML_SIGNUP = "shoppingapp/backend/signup/signupsvc.yml"
         COMMIT_MESSAGE = "CI: Update image tag to ${IMAGE_TAG}"
         // JENKINSGITID = "jenkinsgit"
     }
@@ -169,18 +170,16 @@ pipeline {
                 echo "Updating image tag to ${IMAGE_TAG} in ${KUBE_YAML}"
                     sh """
                     # Show current content
-                    echo "Current content of ${KUBE_YAML}:"
+                    #echo "Current content of ${KUBE_YAML}:"
                     cat ${KUBE_YAML}
             
                     # Create backup
                     cp ${KUBE_YAML} ${KUBE_YAML}.backup
             
-                    # Update signin image tag
+                    # Update image tag
                     sed -i 's|aakashbodade/signin:[^[:space:]]*|aakashbodade/signin:${IMAGE_TAG}|g' ${KUBE_YAML}
-            
-                    # If you have other services in the same YAML file, update them too:
-                    sed -i 's|aakashbodade/signup:[^[:space:]]*|aakashbodade/signup:${IMAGE_TAG}|g' ${KUBE_YAML}
-                    sed -i 's|aakashbodade/react:[^[:space:]]*|aakashbodade/react:${IMAGE_TAG}|g' ${KUBE_YAML}
+                    sed -i 's|aakashbodade/signup:[^[:space:]]*|aakashbodade/signup:${IMAGE_TAG}|g' ${KUBE_YAML_SIGNUP}
+                    
             
                     # Show updated content
                     echo "Updated content of ${KUBE_YAML}:"
@@ -242,5 +241,3 @@ pipeline {
         //         sh "docker run -d --restart=always -p 8000:8000 ${SIGNUP_DOCKERIMAGE_NAME}"
         //     }
         // }
-    }
-}
