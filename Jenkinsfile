@@ -15,8 +15,8 @@ pipeline {
         DOCKER_CREDENTIALS = credentials('DOCKERHUB_CREDENTIALS')
         SONARQUBE_SERVER = 'SonarQube'
         SONAR_SCANNER_HOME = tool 'SonarQubeScanner'
-        KUBE_YAML = "shoppingapp/backend/signin/signinsvc.yml"
-        KUBE_YAML_SIGNUP = "shoppingapp/backend/signup/signupsvc.yml"
+        KUBE_YAML_SIGNIN = "shoppingapp/kubernetes/signin.yml"
+        KUBE_YAML_SIGNUP = "shoppingapp/kubernetes/signup.yml"
         COMMIT_MESSAGE = "CI: Update image tag to ${IMAGE_TAG}"
         // JENKINSGITID = "jenkinsgit"
     }
@@ -177,20 +177,20 @@ pipeline {
                     cp ${KUBE_YAML} ${KUBE_YAML}.backup
             
                     # Update image tag
-                    sed -i 's|aakashbodade/signin:[^[:space:]]*|aakashbodade/signin:${IMAGE_TAG}|g' ${KUBE_YAML}
+                    sed -i 's|aakashbodade/signin:[^[:space:]]*|aakashbodade/signin:${IMAGE_TAG}|g' ${KUBE_YAML_SIGNIN}
                     sed -i 's|aakashbodade/signup:[^[:space:]]*|aakashbodade/signup:${IMAGE_TAG}|g' ${KUBE_YAML_SIGNUP}
                     
             
                     # Show updated content
-                    echo "Updated content of ${KUBE_YAML}:"
-                    cat ${KUBE_YAML}
+                    echo "Updated content of ${KUBE_YAML_SIGNIN}:"
+                    cat ${KUBE_YAML_SIGNIN}
             
                     # Show differences
                     echo "Changes made:"
-                    diff ${KUBE_YAML}.backup ${KUBE_YAML} || true
+                    diff ${KUBE_YAML_SIGNIN}.backup ${KUBE_YAML_SIGNIN} || true
             
                     # Verify the change was made
-                    if grep -q "aakashbodade/signin:${IMAGE_TAG}" ${KUBE_YAML}; then
+                    if grep -q "aakashbodade/signin:${IMAGE_TAG}" ${KUBE_YAML_SIGNIN}; then
                         echo "✅ Image tag successfully updated to ${IMAGE_TAG}"
                     else
                         echo "❌ Failed to update image tag"
