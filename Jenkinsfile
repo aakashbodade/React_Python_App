@@ -15,8 +15,8 @@ pipeline {
         DOCKER_CREDENTIALS = credentials('DOCKERHUB_CREDENTIALS')
         SONARQUBE_SERVER = 'SonarQube'
         SONAR_SCANNER_HOME = tool 'SonarQubeScanner'
-        KUBE_YAML_SIGNIN = "shoppingapp/kubernetes/signin.yml"
-        KUBE_YAML_SIGNUP = "shoppingapp/kubernetes/signup.yml"
+        KUBE_YAML_SIGNIN = "shoppingapp/kubernetes/signin.yaml"
+        KUBE_YAML_SIGNUP = "shoppingapp/kubernetes/signup.yaml"
         COMMIT_MESSAGE = "CI: Update image tag to ${IMAGE_TAG}"
         // JENKINSGITID = "jenkinsgit"
     }
