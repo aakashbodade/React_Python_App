@@ -1,21 +1,38 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: frontend-ingress
+  name: shoppingapp-simple
   annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /
-    nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
     nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/cors-allow-origin: "*"
+    nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, PUT, DELETE, OPTIONS"
 spec:
-  ingressClassName: nginx  # Use the correct ingress class (depends on your controller)
+  ingressClassName: nginx
   rules:
-  - host: your-domain.com  # Replace or remove for IP-based access
-    http:
+  - http:
       paths:
+      # Direct service routing
+      - path: /signup
+        pathType: Prefix
+        backend:
+          service:
+            name: signup-svc
+            port:
+              number: 80
+      
+      - path: /signin
+        pathType: Prefix
+        backend:
+          service:
+            name: signin-svc
+            port:
+              number: 80
+      
+      # Frontend
       - path: /
         pathType: Prefix
         backend:
           service:
-            name: nginx-service
+            name: frontend-service
             port:
               number: 80
