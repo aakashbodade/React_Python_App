@@ -15,6 +15,7 @@ pipeline {
         DOCKER_CREDENTIALS = credentials('DOCKERHUB_CREDENTIALS')
         SONARQUBE_SERVER = 'SonarQube'
         SONAR_SCANNER_HOME = tool 'SonarQubeScanner'
+        KUBE_YAML_FRONTEND = "shoppingapp/kubernetes/frontend.yaml"
         KUBE_YAML_SIGNIN = "shoppingapp/kubernetes/signin.yaml"
         KUBE_YAML_SIGNUP = "shoppingapp/kubernetes/signup.yaml"
         COMMIT_MESSAGE = "CI: Update image tag to ${IMAGE_TAG}"
@@ -167,18 +168,20 @@ pipeline {
 
         stage('Update Image Tag in K8S YAML') {
             steps {
-                echo "Updating image tag to ${IMAGE_TAG} in ${KUBE_YAML}"
+                echo "Updating image tag to ${IMAGE_TAG} in ${KUBE_YAML_SIGNIN}"
                     sh """
                     # Show current content
-                    #echo "Current content of ${KUBE_YAML}:"
-                    cat ${KUBE_YAML}
+                    echo "Current content of ${KUBE_YAML_SIGNIN}:"
+                    cat ${KUBE_YAML_SIGNIN}
             
                     # Create backup
-                    cp ${KUBE_YAML} ${KUBE_YAML}.backup
+                    cp ${KUBE_YAML_SIGNIN} ${KUBE_YAML_SIGNIN}.backup
+                    cp ${KUBE_YAML_SIGNUP} ${KUBE_YAML_SIGNUP}.backup
             
                     # Update image tag
                     sed -i 's|aakashbodade/signin:[^[:space:]]*|aakashbodade/signin:${IMAGE_TAG}|g' ${KUBE_YAML_SIGNIN}
                     sed -i 's|aakashbodade/signup:[^[:space:]]*|aakashbodade/signup:${IMAGE_TAG}|g' ${KUBE_YAML_SIGNUP}
+                    sed -i 's|aakashbodade/frontend:[^[:space:]]*|aakashbodade/frontend:${IMAGE_TAG}|g' ${KUBE_YAML_FRONTEND}
                     
             
                     # Show updated content
