@@ -1,84 +1,61 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: signup-deployment
+  name: signup
   labels:
-    app: shoppingapp
+    app: signup
+    app.kubernetes.io/name: signup
 spec:
-  replicas: 2
-  strategy:
-    type: RollingUpdate
-    rollingUpdate:
-      maxSurge: 1
-      maxUnavailable: 1
+  replicas: 1
   selector:
     matchLabels:
-      app: shoppingapp
-      microservice: signup
+      app: signup
   template:
     metadata:
-      name: signup-pod
       labels:
-        app: shoppingapp
-        microservice: signup
-      annotations:
-        prometheus.io/scrape: "true"
-        prometheus.io/port: "8000"
+        app: signup
     spec:
+      serviceAccountName: shopping-app-serviceaccount
       containers:
-        - name: signup-container
-          image: aakashbodade/signup:10-latest
-          imagePullPolicy: Always
+        - name: signup
+          image: aakashbodade/signup:latest
+          imagePullPolicy: IfNotPresent
           ports:
-            - containerPort: 8001
+            - containerPort: 8080
           env:
-            - name: DB_HOST
-              valueFrom:
-                configMapKeyRef:
-                  name: db-config
-                  key: DB_HOST
-            - name: DB_PORT
-              valueFrom:
-                configMapKeyRef:
-                  name: db-config
-                  key: DB_PORT
-            - name: DB_NAME
-              valueFrom:
-                configMapKeyRef:
-                  name: db-config
-                  key: DB_NAME
-            - name: DB_USER
-              valueFrom:
-                secretKeyRef:
-                  name: db-credentials
-                  key: DB_USER
-            - name: DB_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: db-credentials
-                  key: DB_PASSWORD
+            - name: AWS_REGION
+              value: ap-south-1
           resources:
             requests:
-              memory: "256Mi"
-              cpu: "250m"
+              cpu: "100m"
+              memory: "128Mi"
             limits:
-              memory: "512Mi"
-              cpu: "500m"
-      restartPolicy: Always
-      terminationGracePeriodSeconds: 30
+              cpu: "250m"
+              memory: "256Mi"
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 15
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: signup-svc
+  name: signup
   labels:
-    app: shoppingapp
-    microservice: signup
+    app: signup
 spec:
   type: ClusterIP
   selector:
-    app: shoppingapp
-    microservice: signup
+    app: signup
   ports:
     - port: 80
-      targetPort: 8001
+      targetPort: 8080

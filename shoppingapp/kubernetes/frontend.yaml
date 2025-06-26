@@ -2,8 +2,11 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: frontend
+  labels:
+    app: frontend
+    app.kubernetes.io/name: frontend
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: frontend
@@ -12,23 +15,49 @@ spec:
       labels:
         app: frontend
     spec:
+      serviceAccountName: shopping-app-serviceaccount
       containers:
-      - name: frontend
-        image: aakashbodade/react:9-latest
-        ports:
-        - containerPort: 3000
-        env:
-        - name: CHOKIDAR_USEPOLLING
-          value: "true"
+        - name: frontend
+          image: aakashbodade/frontend:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 3000
+          env:
+            - name: REACT_APP_SIGNIN_URL
+              value: http://signin/signin
+            - name: REACT_APP_SIGNUP_URL
+              value: http://signup/signup
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "250m"
+              memory: "256Mi"
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 3000
+            initialDelaySeconds: 10
+            periodSeconds: 15
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 3000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: frontend-service
+  name: frontend
+  labels:
+    app: frontend
 spec:
+  type: ClusterIP
   selector:
     app: frontend
   ports:
-  - port: 3000
-    targetPort: 3000
-  type: ClusterIP
+    - port: 80
+      targetPort: 3000

@@ -1,116 +1,61 @@
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: shoppingapp-deployment
+  name: signin
   labels:
-    app: shoppingapp
+    app: signin
+    app.kubernetes.io/name: signin
 spec:
-  replicas: 2
-  strategy:
-    type: RollingUpdate
-    rollingUpdate:
-      maxSurge: 1
-      maxUnavailable: 0
+  replicas: 1
   selector:
     matchLabels:
-      app: shoppingapp
-      microservice: signin
+      app: signin
   template:
     metadata:
       labels:
-        app: shoppingapp
-        microservice: signin
-      annotations:
-        prometheus.io/scrape: "true"
-        prometheus.io/port: "8000"
+        app: signin
     spec:
+      serviceAccountName: shopping-app-serviceaccount
       containers:
-        - name: signin-container
-          image: aakashbodade/signin:10-latest
-          imagePullPolicy: Always
+        - name: signin
+          image: aakashbodade/signin:latest
+          imagePullPolicy: IfNotPresent
           ports:
-            - containerPort: 8000
+            - containerPort: 8080
           env:
-            - name: DB_HOST
-              valueFrom:
-                configMapKeyRef:
-                  name: db-config
-                  key: DB_HOST
-            - name: DB_PORT
-              valueFrom:
-                configMapKeyRef:
-                  name: db-config
-                  key: DB_PORT
-            - name: DB_NAME
-              valueFrom:
-                configMapKeyRef:
-                  name: db-config
-                  key: DB_NAME
-            - name: DB_USER
-              valueFrom:
-                secretKeyRef:
-                  name: db-credentials
-                  key: DB_USER
-            - name: DB_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: db-credentials
-                  key: DB_PASSWORD
+            - name: AWS_REGION
+              value: ap-south-1
           resources:
             requests:
-              memory: "256Mi"
-              cpu: "250m"
+              cpu: "100m"
+              memory: "128Mi"
             limits:
-              memory: "512Mi"
-              cpu: "500m"
-          # readinessProbe:
-          #   httpGet:
-          #     path: /health
-          #     port: 8000
-          #   initialDelaySeconds: 10
-          #   periodSeconds: 5
-          # livenessProbe:
-          #   httpGet:
-          #     path: /health
-          #     port: 8000
-          #   initialDelaySeconds: 15
-          #   periodSeconds: 20
-      restartPolicy: Always
-      terminationGracePeriodSeconds: 30
+              cpu: "250m"
+              memory: "256Mi"
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 15
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: signin-svc
+  name: signin
   labels:
-    app: shoppingapp
-    microservice: signin
+    app: signin
 spec:
   type: ClusterIP
   selector:
-    app: shoppingapp
-    microservice: signin
+    app: signin
   ports:
     - port: 80
-      targetPort: 8000
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: db-config
-  namespace: default
-data:
-  DB_HOST: "database-1.c7yqusii0vji.ap-south-1.rds.amazonaws.com"
-  DB_PORT: "5432"
-  DB_NAME: "shoppingapp"
----
-apiVersion: v1
-kind: Secret
-metadata:
-  name: db-credentials
-  namespace: default
-type: Opaque
-data:
-  DB_USER: cG9zdGdyZXM= # base64 encoded 'password'
-  DB_PASSWORD: QWFrYXNoMTk5Nw== # base64 encoded 'securePassword'
+      targetPort: 8080
