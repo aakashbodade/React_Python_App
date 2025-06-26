@@ -18,7 +18,7 @@ spec:
       serviceAccountName: shopping-app-serviceaccount
       containers:
         - name: signup
-          image: aakashbodade/signup:latest
+          image: aakashbodade/signup:14-latest
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
