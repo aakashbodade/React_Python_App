@@ -214,10 +214,13 @@ pipeline {
                         git config user.name "aakashbodade"
                         git config user.email "aakashbodade1990@gmail.com"
 
-                        git add shoppingapp/backend/signin/signinsvc.yml
+                        git add shoppingapp/kubernetes/signin.yaml
                         git commit -m "${COMMIT_MESSAGE}" || echo "No changes to commit"
 
-                        git add shoppingapp/backend/signup/signupsvc.yml
+                        git add shoppingapp/kubernetes/signup.yaml
+                        git commit -m "${COMMIT_MESSAGE}" || echo "No changes to commit"
+
+                        git add shoppingapp/kubernetes/frontend.yaml
                         git commit -m "${COMMIT_MESSAGE}" || echo "No changes to commit"
 
                         git push -o feature
