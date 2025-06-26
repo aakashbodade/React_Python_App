@@ -18,7 +18,7 @@ spec:
       serviceAccountName: shopping-app-serviceaccount
       containers:
         - name: frontend
-          image: aakashbodade/frontend:latest
+          image: aakashbodade/frontend:14-latest
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 3000
